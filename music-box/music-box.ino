@@ -4,9 +4,8 @@
 #define finalOut A1
 
 int impulsTime = 1000;
-int inputs[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+int inputs[] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}; // 2 - 11 pnp, 12 npn
 int amountOfInputs = 10; // amount of inputs = amount of inputs - 1
-boolean inputMode = HIGH; // pullUp
 boolean outputMode = HIGH; // normal open pin
 
 boolean lastStateInputs[] = {};
@@ -17,8 +16,12 @@ boolean readyFunc();
 void setup() {
   for(int i = 0; i < amountOfInputs; i++){
     pinMode(inputs[i], INPUT);
-    digitalWrite(inputs[i], HIGH);
-    lastStateInputs[i] = digitalRead(inputs[i]);
+    if(i < amountOfInputs - 1){
+      lastStateInputs[i] = LOW;
+    }
+    else{
+      lastStateInputs[i] = HIGH;
+    }
   }
   pinMode(impulsOut, OUTPUT);
   pinMode(finalOut, OUTPUT);
@@ -42,7 +45,12 @@ void impulsFunc(){
   boolean change;
   for(int i = 0; i < amountOfInputs; i++){
     stateInputs[i] = digitalRead(inputs[i]);
-    change = (lastStateInputs[i] && !stateInputs[i] && !change) ? true : false;
+    if(i < amountOfInputs - 1){
+      change = (!lastStateInputs[i] && stateInputs[i] && !change) ? true : false;
+    }
+    else{
+      change = (lastStateInputs[i] && !stateInputs[i] && !change) ? true : false;
+    }
   }
   for(int i = 0; i < amountOfInputs; i++){
     lastStateInputs[i] = stateInputs[i];
@@ -57,8 +65,16 @@ void impulsFunc(){
 boolean readyFunc(){
   boolean tmpVal;
   for(int i = 0; i < amountOfInputs; i++){
-    tmpVal = !digitalRead(inputs[i]) ? true : false;
-    if(!tmpVal) break;
+    // pnp inputs (inductive sensor)
+    if(i < amountOfInputs - 1){
+      tmpVal = digitalRead(inputs[i]) ? true : false;
+      if(!tmpVal) break;
+    }
+    // npn inputs (inductive sensor)
+    else{
+      tmpVal = !digitalRead(inputs[i]) ? true : false;
+      if(!tmpVal) break;
+    }
   }
   return tmpVal;
 }
